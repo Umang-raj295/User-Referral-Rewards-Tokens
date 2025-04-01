@@ -1,0 +1,33 @@
+pragma solidity ^0.8.0;
+
+contract ReferralProgram {
+    address public owner;
+    mapping(address => address) public referrer;
+    mapping(address => uint256) public rewards;
+    mapping(address => bool) public hasClaimed;
+    uint256 public rewardAmount = 100;
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+    
+    function setReferrer(address user, address _referrer) public onlyOwner {
+        require(referrer[user] == address(0), "Already referred");
+        require(user != _referrer, "Self-referral not allowed");
+        referrer[user] = _referrer;
+    }
+    
+    function distributeReward(address user) public onlyOwner {
+        address _referrer = referrer[user];
+        require(_referrer != address(0), "No referrer");
+        require(!hasClaimed[user], "Already claimed");
+        
+        rewards[_referrer] += rewardAmount;
+        hasClaimed[user] = true;
+    }
+    
+    function checkReward(address user) public view returns (uint256) {
+        return rewards[user];
+    }
+}
